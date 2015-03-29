@@ -3,11 +3,18 @@
 wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz */
 
 /* Description: 
-The Writable interface consists of 2 methods: readFields() and write().The above defined LogWritable uses Writable objects as its fields. readFields() is used to de-serialize the input data (DataInput object) and populate the fields of Writable object. It is also possible to use java primitive data types as the fields of the Writable type and to use the corresponding read methods of the DataInput object to
-read the values from the underlying stream, as shown in the following code snippet:
+The Writable interface consists of 2 methods: readFields() and write().The above defined LogWritable uses Writable
+objects as its fields. readFields() is used to de-serialize the input data (DataInput object) and populate the 
+fields of Writable object. It is also possible to use java primitive data types as the fields of the Writable type 
+and to use the corresponding read methods of the DataInput object to read the values from the underlying stream, 
+as shown in the following code snippet:
+
 int responseSize = in.readInt();
 String userIP = in.readUTF();
-Inside the write() method, we write the fields of the Writable object to the underlying stream. If we are using Java Primitives, corresponding write methods of DataOutput object are used to write the values to the underlying stream.
+
+Inside the write() method, we write the fields of the Writable object to the underlying stream. If we are using 
+Java Primitives, corresponding write methods of DataOutput object are used to write the values to the underlying 
+stream.
 out.writeInt(responseSize);
 out.writeUTF(userIP);
 */
