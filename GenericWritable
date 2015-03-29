@@ -12,7 +12,9 @@ In addition to GenericWritable, ObjectWritable is another class which achieves s
 However, Hadoop serializes ObjectWritable instances by writing the class name of the instance with each serialized
 entry.
 */
-
+/* The data set for this program is also the same HTTP log server entries ftp://ita.ee.lbl.gov/
+traces/NASA_access_log_Jul95.gz 
+*/
 public class GenericWritableDemo {
 	
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException 
