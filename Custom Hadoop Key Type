@@ -1,0 +1,98 @@
+
+/* The Mapreduce key type should have the ability to compare against each other for sorting purposes. Hence the 
+custom Writable data type should implement org.apache.hadoop.io.WritableComparable<T> interface. The WritableComparable
+interface extends org.apache.hadoop.io.Writable interface and adds the compareTo method to perform the comparisons.
+*/
+
+public class CustomDataType {
+  public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException
+  {
+    Configuration conf=new Configuration();
+		Job myjob = new Job(conf);
+		.
+		.
+		.
+		//defined LogWritable for MapOutput value and Output value types.
+		myjob.setMapOutputKeyClass(LogWritable.class);
+		myjob.setMapOutputValueClass(IntWritable.class);
+		myjob.setOutputKeyClass(Text.class);
+		myjob.setOutputValueClass(IntWritable.class);
+		
+		myjob.setInputFormatClass(TextInputFormat.class);
+		myjob.setOutputFormatClass(TextOutputFormat.class);
+		.
+		.
+		.
+	  System.exit(myjob.waitForCompletion(true)? 0:1);
+  }
+  
+  //This LogWritable type can be used as a vaue type as it implements Writable interface.
+	public static class LogWritable implements WritableComparable<LogWritable>
+	{
+		private Text userIP, timestamp, request;
+		private IntWritable responseSize, status;
+		public LogWritable()
+		{
+			this.userIP = new Text();
+			this.timestamp = new Text();
+			this.request = new Text();
+			this.responseSize = new IntWritable();
+			this.status = new IntWritable();
+		}
+	/* De-serialize the input data from underlying stream. It is important to read the fields in the order that they
+	been specified in mapper */
+		public void readFields(DataInput in) throws IOException
+		{
+			userIP.readFields(in);	
+			timestamp.readFields(in);
+		
+			request.readFields(in);
+			responseSize.readFields(in);
+			status.readFields(in);
+		}
+	   public void write(DataOutput out) throws IOException
+	   {
+		   userIP.write(out);
+		   timestamp.write(out);
+		   request.write(out);
+		   responseSize.write(out);
+		   status.write(out);
+	   }
+	 /* TextOutputFormat uses the toString() method to serialize the key and value types. As the output value type is 
+	 LogWritable, toString must be implemented to serialize the instances of custom Writable type.
+	   public String toString()
+	   {
+		   String userip=userIP.toString();
+		   String time=timestamp.toString();
+		   String req=request.toString();
+		   String response=responseSize.toString();
+		   String stat=status.toString();
+		   return userip+":"+time+":"+req+":"+response+":"+stat;
+	   }
+	/* This method is in addition to write() and readFields() methods of Writable interface. This compareTo method
+	returns a negative integer, zero or a positive integer. Here we are considering userIP and timestamp fields for 
+	comparison. The objects are equal when both userIP and timestamp are same. If the objects are not equal, the sort
+	order is based on userIP and then based on the timestamp. */
+	 public int compareTo(LogWritable o) 
+	 {
+    if (userIP.compareTo(o.userIP)==0){
+      return (timestamp.compareTo(o.timestamp));
+      }else return (userIP.compareTo(o.userIP);
+    }
+    public boolean equals(Object o) 
+    {
+        if (o instanceof LogWritable) {
+          LogWritable other = (LogWritable) o;
+            return userIP.equals(other.userIP)
+              && timestamp.equals(other.timestamp);
+          }
+  return false;
+    }
+ /* The default haspartitioner requires hashCode() method of key objects for uniform distribution of hash values.
+ Here the intermediate LogWritable data will be partitioned based on IP address */
+    public int hashCode()
+    {
+      return userIP.hashCode();
+    }
+	}
+	}
