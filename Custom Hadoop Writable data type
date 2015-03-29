@@ -1,3 +1,7 @@
+
+/* The data set is HTTP server log data from ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz 
+wget ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz */
+
 public class CustomDataType {
   public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException
   {
