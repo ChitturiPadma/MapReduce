@@ -1,0 +1,89 @@
+
+/* Emitting data of multiple value types from a mapper is very useful and this avoids the complexity of having
+multiple MapReduce computations to summarize different types of properties in a data set. As Hadoop reducers do not 
+allow multiple input types, a GenericWritable class can wrap multiple value types.
+
+In the below example, the class MultiValueWritable extends org.apache.hadoop.io.GenericWritable class and it 
+implements the method getTypes() which returns the array of Writable classes that we would be using.
+The GenericWritable implementation class specifies a set of Writable value types to wrap. (specified in the 
+array Classes).
+
+In addition to GenericWritable, ObjectWritable is another class which achieves same objective as GenericWritable
+However, Hadoop serializes ObjectWritable instances by writing the class name of the instance with each serialized
+entry.
+*/
+
+public class GenericWritableDemo {
+	
+	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException 
+	{
+		Configuration conf=new Configuration();
+		Job myjob = new Job(conf);
+		.
+		.
+		myjob.setMapOutputKeyClass(Text.class);
+		myjob.setMapOutputValueClass(MultiValueWritable.class);
+		myjob.setOutputKeyClass(Text.class);
+		myjob.setOutputValueClass(Text.class);
+		myjob.setInputFormatClass(TextInputFormat.class);
+		myjob.setOutputFormatClass(TextOutputFormat.class);
+		.
+		.
+			System.exit(myjob.waitForCompletion(true)? 0:1);	
+	}
+	public static class MultiValueWritable extends GenericWritable {
+		
+		private static Class[] Classes =new Class[] {IntWritable.class, Text.class };
+		public MultiValueWritable()
+		{
+			
+		}
+		public MultiValueWritable(Writable value)
+		{
+			set(value);
+		}
+		protected Class[] getTypes() 
+		{
+			return Classes;
+		}
+	}
+	public static class MyMapper extends Mapper <LongWritable, Text, Text,MultiValueWritable>
+	{
+	  private Text userHostText = new Text();
+		private Text requestText = new Text();
+		private IntWritable responseSize = new IntWritable();
+		
+		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
+		{
+		   // parse log-entries
+		   userHostText.set(userIP);
+		      requestText.set(request);
+		      .
+		      .
+	    	context.write(userHostText, new MultiValueWritable(requestText));
+		      context.write(userHostText, new MultiValueWritable(responseSize));     
+	    }	   
+		}
+		public static class MyReducer extends Reducer<Text, MultiValueWritable, Text, Text>
+	{
+		
+		Text result=new Text();
+		public void reduce(Text key, Iterable<MultiValueWritable> values, Context context) throws IOException, InterruptedException
+		{
+			int sum=0;
+			StringBuilder requests = new StringBuilder();
+			for (MultiValueWritable multiValueWritable : values) {
+			Writable writable = multiValueWritable.get();
+			if (writable instanceof IntWritable){
+			sum += ((IntWritable)writable).get();
+			}else{
+			requests.append(((Text)writable).toString());
+			requests.append("\t");
+			}
+			}
+			result.set(sum + "\t"+requests);
+			context.write(key, result);
+	
+		}
+	}
+	}
